@@ -1,6 +1,9 @@
 import os
 import requests
+from dotenv import load_dotenv
 from groq import Groq
+
+load_dotenv()
 
 def inference(prompt):
     # Try Groq first
