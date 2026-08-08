@@ -14,7 +14,7 @@ def main():
 
     print(f"Found {len(findings)} issue(s):\n")
     for f in findings:
-        print(f"  [Row {f['row']}] Order {f['order_id']}, column '{f['column']}':")
+        print(f"  [{f['severity'].upper()}] [Row {f['row']}] Order {f['order_id']}, column '{f['column']}':")
         print(f"    → {f['issue']}\n")
 
 
