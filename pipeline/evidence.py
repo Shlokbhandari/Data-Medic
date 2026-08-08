@@ -30,4 +30,17 @@ def collect_evidence(finding, df):
         evidence['affected_rows'] = zero_rows.to_dict('records')
         evidence['total_affected_in_dataset'] = len(zero_rows)
 
+    # Include summary stats for the column from clean rows, so the diagnosis
+    # step can see what "normal" looks like and compare against the flagged value
+    if column in df.columns and pd.api.types.is_numeric_dtype(df[column]):
+        clean = df[column].dropna()
+        clean = clean[clean != 0] if finding.get('issue', '').startswith('Price is exactly 0') else clean
+        if not clean.empty:
+            evidence['column_stats'] = {
+                'min': round(float(clean.min()), 2),
+                'max': round(float(clean.max()), 2),
+                'mean': round(float(clean.mean()), 2),
+                'median': round(float(clean.median()), 2),
+            }
+
     return evidence

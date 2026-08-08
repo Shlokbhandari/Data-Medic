@@ -12,6 +12,7 @@ Column involved: {column}
 Total rows affected by this type of issue: {total_affected}
 Affected row(s):
 {rows}
+{stats_section}
 
 Based ONLY on this evidence, respond with a JSON object containing exactly these fields:
 - "root_cause": a plain-English explanation of why this likely happened
@@ -31,12 +32,18 @@ def diagnose(evidence):
     for row in evidence['affected_rows']:
         rows_text += f"  {row}\n"
 
+    stats_section = ""
+    if 'column_stats' in evidence:
+        s = evidence['column_stats']
+        stats_section = f"\nColumn stats from clean (non-flagged) rows: min={s['min']}, max={s['max']}, mean={s['mean']}, median={s['median']}"
+
     prompt = DIAGNOSIS_PROMPT_TEMPLATE.format(
         issue=finding['issue'],
         severity=finding['severity'],
         column=evidence['column'],
         total_affected=evidence['total_affected_in_dataset'],
-        rows=rows_text.strip()
+        rows=rows_text.strip(),
+        stats_section=stats_section
     )
 
     response_text, backend = inference(prompt)

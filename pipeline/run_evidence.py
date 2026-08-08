@@ -25,6 +25,9 @@ def main():
         print(f"  Affected row(s):")
         for row in evidence['affected_rows']:
             print(f"    {row}")
+        if 'column_stats' in evidence:
+            stats = evidence['column_stats']
+            print(f"  Column stats (from clean rows): min={stats['min']}, max={stats['max']}, mean={stats['mean']}, median={stats['median']}")
         print()
 
 
