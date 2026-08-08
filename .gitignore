@@ -19,5 +19,6 @@ __pycache__/
 ehthumbs.db
 Thumbs.db
 
-# AI Agents
+# Local-only files (not pushed to GitHub)
 .agents/
+context.md
