@@ -4,6 +4,8 @@ from llm import inference
 
 DIAGNOSIS_PROMPT_TEMPLATE = """You are a data pipeline diagnostician. You are given evidence about a data quality issue found in a pipeline. Your job is to determine why this issue likely happened, based ONLY on the evidence provided. Do not invent or assume anything not present in the evidence.
 
+IMPORTANT: You are also given the current pipeline source code. Before claiming the pipeline's logic is the cause of the issue, carefully check whether the existing code already handles this case correctly (e.g., it already deduplicates, already drops nulls, etc.). If the code already handles it, the root cause is NOT a logic bug in the pipeline — it is more likely an upstream data quality issue, a missing logging/alerting gap, or a transparency problem. Say so explicitly in the root_cause field.
+
 Here is the evidence:
 
 Issue: {issue}
@@ -13,6 +15,7 @@ Total rows affected by this type of issue: {total_affected}
 Affected row(s):
 {rows}
 {stats_section}
+{code_section}
 
 Based ONLY on this evidence, respond with a JSON object containing exactly these fields:
 - "root_cause": a plain-English explanation of why this likely happened
@@ -37,13 +40,18 @@ def diagnose(evidence):
         s = evidence['column_stats']
         stats_section = f"\nColumn stats from clean (non-flagged) rows: min={s['min']}, max={s['max']}, mean={s['mean']}, median={s['median']}"
 
+    code_section = ""
+    if evidence.get('current_pipeline_code'):
+        code_section = f"\nCurrent pipeline source code:\n```python\n{evidence['current_pipeline_code']}```"
+
     prompt = DIAGNOSIS_PROMPT_TEMPLATE.format(
         issue=finding['issue'],
         severity=finding['severity'],
         column=evidence['column'],
         total_affected=evidence['total_affected_in_dataset'],
         rows=rows_text.strip(),
-        stats_section=stats_section
+        stats_section=stats_section,
+        code_section=code_section
     )
 
     response_text, backend = inference(prompt)

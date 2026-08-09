@@ -1,10 +1,15 @@
+import os
 import pandas as pd
+
+
+PIPELINE_CODE_PATH = os.path.join(os.path.dirname(__file__), 'run_pipeline.py')
 
 
 def collect_evidence(finding, df):
     """Gathers raw facts about a single finding from the monitor.
     Returns a structured dict with the affected rows, column, scope of the issue,
-    and the monitor's original description. No reasoning or diagnosis happens here."""
+    the monitor's original description, and the current pipeline source code.
+    No reasoning or diagnosis happens here."""
 
     column = finding['column']
     evidence = {
@@ -13,6 +18,14 @@ def collect_evidence(finding, df):
         'affected_rows': [],
         'total_affected_in_dataset': 0,
     }
+
+    # Include the current pipeline source so the diagnosis step can see
+    # what the code already handles before blaming it
+    try:
+        with open(PIPELINE_CODE_PATH, 'r') as f:
+            evidence['current_pipeline_code'] = f.read()
+    except FileNotFoundError:
+        evidence['current_pipeline_code'] = None
 
     if finding['severity'] == 'high' and column == 'transaction_id':
         # Grab all rows that share this duplicated value
