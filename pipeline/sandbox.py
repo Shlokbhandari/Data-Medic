@@ -1,10 +1,16 @@
 import tempfile
 import shutil
+import subprocess
+import sys
 from pathlib import Path
+
+import pandas as pd
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DIRS_TO_COPY = ['pipeline', 'data']
+
+SANDBOX_TIMEOUT_SECONDS = 30
 
 
 def create_sandbox(patch, target_file):
@@ -37,6 +43,53 @@ def create_sandbox(patch, target_file):
         'target_file': target_file,
         'original_code': original_code,
         'patched_code': patch['patched_code'],
+    }
+
+
+def run_in_sandbox(sandbox_path, input_csv):
+    """Runs pipeline/run_pipeline.py inside the sandbox as a subprocess.
+
+    Copies input_csv over data/orders.csv in the sandbox before running,
+    so the hardcoded path in run_pipeline.py reads the intended input.
+
+    Returns a structured result with raw facts — no pass/fail judgment."""
+
+    sandbox = Path(sandbox_path)
+
+    sandbox_input = sandbox / 'data' / 'orders.csv'
+    shutil.copy2(input_csv, sandbox_input)
+
+    output_csv_path = sandbox / 'data' / 'processed_orders.csv'
+    if output_csv_path.exists():
+        output_csv_path.unlink()
+
+    try:
+        proc = subprocess.run(
+            [sys.executable, 'pipeline/run_pipeline.py'],
+            cwd=str(sandbox),
+            capture_output=True,
+            text=True,
+            timeout=SANDBOX_TIMEOUT_SECONDS,
+        )
+        exit_code = proc.returncode
+        stdout = proc.stdout
+        stderr = proc.stderr
+    except subprocess.TimeoutExpired:
+        exit_code = -1
+        stdout = ''
+        stderr = f'Pipeline timed out after {SANDBOX_TIMEOUT_SECONDS} seconds'
+
+    output_csv_exists = output_csv_path.exists()
+    output_df = None
+    if output_csv_exists:
+        output_df = pd.read_csv(output_csv_path)
+
+    return {
+        'exit_code': exit_code,
+        'stdout': stdout,
+        'stderr': stderr,
+        'output_csv_exists': output_csv_exists,
+        'output_df': output_df,
     }
 
 
