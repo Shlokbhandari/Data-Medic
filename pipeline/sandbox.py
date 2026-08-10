@@ -7,7 +7,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DIRS_TO_COPY = ['pipeline', 'data']
 
 
-def create_sandbox(patch, target_file='pipeline/run_pipeline.py'):
+def create_sandbox(patch, target_file):
     """Creates an isolated copy of the project, applies the patch to the target file,
     and returns the sandbox path plus a record of what changed.
 

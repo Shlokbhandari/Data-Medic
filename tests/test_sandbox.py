@@ -17,7 +17,7 @@ SAMPLE_PATCH = {
 
 
 def test_sandbox_contains_pipeline_and_data():
-    result = create_sandbox(SAMPLE_PATCH)
+    result = create_sandbox(SAMPLE_PATCH, target_file='pipeline/run_pipeline.py')
     sandbox = Path(result['sandbox_path'])
     try:
         assert (sandbox / 'pipeline').is_dir()
@@ -27,7 +27,7 @@ def test_sandbox_contains_pipeline_and_data():
 
 
 def test_patched_file_differs_from_original():
-    result = create_sandbox(SAMPLE_PATCH)
+    result = create_sandbox(SAMPLE_PATCH, target_file='pipeline/run_pipeline.py')
     sandbox = Path(result['sandbox_path'])
     try:
         patched_content = (sandbox / result['target_file']).read_text()
@@ -39,7 +39,7 @@ def test_patched_file_differs_from_original():
 
 def test_real_repo_file_is_untouched():
     original_bytes = REAL_PIPELINE.read_bytes()
-    result = create_sandbox(SAMPLE_PATCH)
+    result = create_sandbox(SAMPLE_PATCH, target_file='pipeline/run_pipeline.py')
     sandbox = Path(result['sandbox_path'])
     try:
         after_bytes = REAL_PIPELINE.read_bytes()
@@ -49,7 +49,7 @@ def test_real_repo_file_is_untouched():
 
 
 def test_cleanup_removes_directory():
-    result = create_sandbox(SAMPLE_PATCH)
+    result = create_sandbox(SAMPLE_PATCH, target_file='pipeline/run_pipeline.py')
     sandbox_path = result['sandbox_path']
     assert Path(sandbox_path).exists()
     cleanup_sandbox(sandbox_path)
