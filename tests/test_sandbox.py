@@ -37,13 +37,25 @@ def test_patched_file_differs_from_original():
         cleanup_sandbox(str(sandbox))
 
 
+def _snapshot_repo():
+    snapshot = {}
+    for d in ['pipeline', 'data']:
+        dir_path = PROJECT_ROOT / d
+        if dir_path.exists():
+            for filepath in dir_path.rglob('*'):
+                if filepath.is_file() and '__pycache__' not in filepath.parts:
+                    rel_path = str(filepath.relative_to(PROJECT_ROOT))
+                    snapshot[rel_path] = filepath.read_bytes()
+    return snapshot
+
+
 def test_real_repo_file_is_untouched():
-    original_bytes = REAL_PIPELINE.read_bytes()
+    before_snapshot = _snapshot_repo()
     result = create_sandbox(SAMPLE_PATCH, target_file='pipeline/run_pipeline.py')
     sandbox = Path(result['sandbox_path'])
     try:
-        after_bytes = REAL_PIPELINE.read_bytes()
-        assert original_bytes == after_bytes
+        after_snapshot = _snapshot_repo()
+        assert before_snapshot == after_snapshot
     finally:
         cleanup_sandbox(str(sandbox))
 

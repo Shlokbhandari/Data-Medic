@@ -47,13 +47,25 @@ def test_broken_pipeline_returns_nonzero_with_stderr():
         cleanup_sandbox(sandbox_path)
 
 
-def test_real_processed_csv_unchanged():
-    before = REAL_PROCESSED.read_bytes() if REAL_PROCESSED.exists() else None
+def _snapshot_repo():
+    snapshot = {}
+    for d in ['pipeline', 'data']:
+        dir_path = PROJECT_ROOT / d
+        if dir_path.exists():
+            for filepath in dir_path.rglob('*'):
+                if filepath.is_file() and '__pycache__' not in filepath.parts:
+                    rel_path = str(filepath.relative_to(PROJECT_ROOT))
+                    snapshot[rel_path] = filepath.read_bytes()
+    return snapshot
+
+
+def test_real_repo_untouched_by_run():
+    before_snapshot = _snapshot_repo()
     result = create_sandbox(IDENTITY_PATCH, target_file='pipeline/run_pipeline.py')
     sandbox_path = result['sandbox_path']
     try:
         run_in_sandbox(sandbox_path, ORDERS_CSV)
-        after = REAL_PROCESSED.read_bytes() if REAL_PROCESSED.exists() else None
-        assert before == after
+        after_snapshot = _snapshot_repo()
+        assert before_snapshot == after_snapshot
     finally:
         cleanup_sandbox(sandbox_path)
