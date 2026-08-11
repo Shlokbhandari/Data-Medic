@@ -16,6 +16,7 @@ RULES:
 - Do NOT remove existing cleaning logic for other issue types (e.g. dropping null prices, handling duplicates that already works)
 - The fix should address the ROOT CAUSE described in the diagnosis, not just hide the symptom
 - Keep the code simple and readable
+- IMPORTANT FOR DUPLICATE KEY ISSUES: If the diagnosis indicates the pipeline already handles duplicates but the root cause is upstream data quality, the fix must still make row selection deterministic — sort by order_date (earliest first) before dropping duplicates, so the kept row is always the one with the earliest date. Logging may be added in addition, but NOT instead of making selection deterministic.
 
 DIAGNOSIS:
 Root cause: {root_cause}
@@ -108,9 +109,12 @@ def _parse_response(response_text, current_code):
     }
 
 
-def generate_patch(diagnosis, evidence, current_code):
+def generate_patch(diagnosis, evidence, current_code, extra_context=''):
     """Takes a diagnosis, evidence, and the current pipeline code, and asks the LLM
-    to propose a specific code fix. Returns the patch dict and which backend answered."""
+    to propose a specific code fix. Returns the patch dict and which backend answered.
+
+    extra_context is optional feedback from a previous failed attempt,
+    appended to the prompt so the LLM can learn from its mistakes."""
 
     finding = evidence['finding']
 
@@ -131,7 +135,20 @@ def generate_patch(diagnosis, evidence, current_code):
         current_code=current_code,
     )
 
+    if extra_context:
+        prompt += f"\n\nIMPORTANT — YOUR PREVIOUS ATTEMPT FAILED. Here is what went wrong:\n{extra_context}\nFix this specific problem in your new attempt."
+
     response_text, backend = inference(prompt)
     patch = _parse_response(response_text, current_code)
 
+    # Cheap syntax check before returning
+    try:
+        compile(patch['patched_code'], '<patched_code>', 'exec')
+        patch['syntax_valid'] = True
+        patch['syntax_error'] = None
+    except SyntaxError as e:
+        patch['syntax_valid'] = False
+        patch['syntax_error'] = f"Line {e.lineno}: {e.msg}"
+
     return patch, backend
+
