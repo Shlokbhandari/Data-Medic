@@ -12,19 +12,19 @@ DataMedic follows a strict, safe execution flow:
 
 ```mermaid
 flowchart TD
-    Monitor[Monitor\n(Detect data anomalies)] --> Evidence[Evidence\n(Collect failing rows & stats)]
-    Evidence --> Diagnose[Diagnose\n(Identify root cause using LLM)]
-    Diagnose --> Gate{Confidence Gate\n(Is the diagnosis confident?)}
+    Monitor["Monitor<br/>(Detect data anomalies)"] --> Evidence["Evidence<br/>(Collect failing rows & stats)"]
+    Evidence --> Diagnose["Diagnose<br/>(Identify root cause using LLM)"]
+    Diagnose --> Gate{"Confidence Gate<br/>(Is the diagnosis confident?)"}
     
-    Gate -- No --> Escalate[Escalate to Human]
-    Gate -- Yes --> Patch[Patch\n(Generate code fix)]
+    Gate -- No --> Escalate["Escalate to Human"]
+    Gate -- Yes --> Patch["Patch<br/>(Generate code fix)"]
     
-    Patch --> Sandbox[Sandbox Validate\n(Run fix in isolated environment)]
-    Sandbox -- Fails --> Retry[Retry Patch\n(Feed error back to LLM)]
+    Patch --> Sandbox["Sandbox Validate<br/>(Run fix in isolated environment)"]
+    Sandbox -- Fails --> Retry["Retry Patch<br/>(Feed error back to LLM)"]
     Retry --> Patch
     
-    Sandbox -- Passes --> Branch[Branch / Commit\n(Stage fix locally)]
-    Branch --> PR[Push & PR\n(Open GitHub Pull Request)]
+    Sandbox -- Passes --> Branch["Branch / Commit<br/>(Stage fix locally)"]
+    Branch --> PR["Push & PR<br/>(Open GitHub Pull Request)"]
 ```
 
 ## Proof it works
