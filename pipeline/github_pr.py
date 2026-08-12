@@ -9,7 +9,7 @@ def push_and_create_pr(branch_name, patch, diagnosis, evidence, finding_type, va
     Pushes the local fix branch to origin and creates a Pull Request via the GitHub API.
     Builds a plain-English PR body summarizing the diagnosis, evidence, and validation results.
     """
-    load_dotenv()
+    load_dotenv(override=True)
     token = os.environ.get('GITHUB_TOKEN')
     
     if not token:
