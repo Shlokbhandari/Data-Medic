@@ -68,6 +68,8 @@ def check_issue_addressed(finding_type, baseline_result, patched_result, evidenc
         return _check_duplicate_fix(baseline_result, patched_result)
     elif finding_type == 'suspicious_zero_price':
         return _check_flagged_fix(patched_result, evidence, expected_reason="suspicious zero price")
+    elif finding_type == 'missing_price':
+        return _check_flagged_fix(patched_result, evidence, expected_reason="missing price")
 
     return {
         'passed': None,

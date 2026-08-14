@@ -128,6 +128,8 @@ def generate_patch(diagnosis, evidence, current_code, finding_type=None, extra_c
         finding_specific_rules = "- IMPORTANT FOR DUPLICATE KEY ISSUES: If the diagnosis indicates the pipeline already handles duplicates but the root cause is upstream data quality, the fix must still make row selection deterministic — sort by order_date (earliest first) before dropping duplicates, so the kept row is always the one with the earliest date."
     elif finding_type == 'suspicious_zero_price':
         finding_specific_rules = "- IMPORTANT FOR $0 PRICE ISSUES: You must NOT permanently drop rows with a price of exactly 0.0. Instead, you must isolate them: select the rows where price == 0.0, add a new column `flag_reason` set to 'suspicious zero price', write them to a new file 'data/flagged_orders.csv' (with index=False), and then exclude them from the main DataFrame before it is written to 'data/processed_orders.csv'."
+    elif finding_type == 'missing_price':
+        finding_specific_rules = "- IMPORTANT FOR MISSING PRICE ISSUES: The pipeline currently drops rows with a missing price. You must change this so the data is not silently lost. You must isolate them: select the rows where price is missing, add a new column `flag_reason` set to 'missing price', write them to a new file 'data/flagged_orders.csv' (with index=False, or append if it exists), and then exclude them from the main DataFrame before it is written to 'data/processed_orders.csv'."
 
     prompt = PATCH_PROMPT_TEMPLATE.format(
         root_cause=diagnosis.get('root_cause', 'unknown'),
