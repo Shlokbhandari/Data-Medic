@@ -63,6 +63,10 @@ def run_in_sandbox(sandbox_path, input_csv):
     if output_csv_path.exists():
         output_csv_path.unlink()
 
+    flagged_csv_path = sandbox / 'data' / 'flagged_orders.csv'
+    if flagged_csv_path.exists():
+        flagged_csv_path.unlink()
+
     try:
         proc = subprocess.run(
             [sys.executable, 'pipeline/run_pipeline.py'],
@@ -83,6 +87,11 @@ def run_in_sandbox(sandbox_path, input_csv):
     output_df = None
     if output_csv_exists:
         output_df = pd.read_csv(output_csv_path)
+        
+    flagged_csv_exists = flagged_csv_path.exists()
+    flagged_df = None
+    if flagged_csv_exists:
+        flagged_df = pd.read_csv(flagged_csv_path)
 
     return {
         'exit_code': exit_code,
@@ -90,6 +99,8 @@ def run_in_sandbox(sandbox_path, input_csv):
         'stderr': stderr,
         'output_csv_exists': output_csv_exists,
         'output_df': output_df,
+        'flagged_csv_exists': flagged_csv_exists,
+        'flagged_df': flagged_df,
     }
 
 

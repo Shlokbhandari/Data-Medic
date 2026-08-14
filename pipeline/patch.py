@@ -16,7 +16,7 @@ RULES:
 - Do NOT remove existing cleaning logic for other issue types (e.g. dropping null prices, handling duplicates that already works)
 - The fix should address the ROOT CAUSE described in the diagnosis, not just hide the symptom
 - Keep the code simple and readable
-- IMPORTANT FOR DUPLICATE KEY ISSUES: If the diagnosis indicates the pipeline already handles duplicates but the root cause is upstream data quality, the fix must still make row selection deterministic — sort by order_date (earliest first) before dropping duplicates, so the kept row is always the one with the earliest date. Logging may be added in addition, but NOT instead of making selection deterministic.
+{finding_specific_rules}
 
 DIAGNOSIS:
 Root cause: {root_cause}
@@ -109,7 +109,7 @@ def _parse_response(response_text, current_code):
     }
 
 
-def generate_patch(diagnosis, evidence, current_code, extra_context=''):
+def generate_patch(diagnosis, evidence, current_code, finding_type=None, extra_context=''):
     """Takes a diagnosis, evidence, and the current pipeline code, and asks the LLM
     to propose a specific code fix. Returns the patch dict and which backend answered.
 
@@ -123,6 +123,12 @@ def generate_patch(diagnosis, evidence, current_code, extra_context=''):
         s = evidence['column_stats']
         stats_section = f"Column stats from clean rows: min={s['min']}, max={s['max']}, mean={s['mean']}, median={s['median']}"
 
+    finding_specific_rules = ""
+    if finding_type == 'duplicate_transaction_id':
+        finding_specific_rules = "- IMPORTANT FOR DUPLICATE KEY ISSUES: If the diagnosis indicates the pipeline already handles duplicates but the root cause is upstream data quality, the fix must still make row selection deterministic — sort by order_date (earliest first) before dropping duplicates, so the kept row is always the one with the earliest date."
+    elif finding_type == 'suspicious_zero_price':
+        finding_specific_rules = "- IMPORTANT FOR $0 PRICE ISSUES: You must NOT permanently drop rows with a price of exactly 0.0. Instead, you must isolate them: select the rows where price == 0.0, add a new column `flag_reason` set to 'suspicious zero price', write them to a new file 'data/flagged_orders.csv' (with index=False), and then exclude them from the main DataFrame before it is written to 'data/processed_orders.csv'."
+
     prompt = PATCH_PROMPT_TEMPLATE.format(
         root_cause=diagnosis.get('root_cause', 'unknown'),
         confidence=diagnosis.get('confidence', 'N/A'),
@@ -133,6 +139,7 @@ def generate_patch(diagnosis, evidence, current_code, extra_context=''):
         affected_rows=evidence['affected_rows'],
         stats_section=stats_section,
         current_code=current_code,
+        finding_specific_rules=finding_specific_rules,
     )
 
     if extra_context:

@@ -18,12 +18,13 @@ def generate_and_validate_with_retry(diagnosis, evidence, current_code, finding_
             last = attempts[-1]
             extra_context = f"Attempt {len(attempts)} failed. Reason: {last['failure_reason']}"
 
-        patch_result, backend = generate_patch(diagnosis, evidence, current_code, extra_context=extra_context)
+        patch_result, backend = generate_patch(diagnosis, evidence, current_code, finding_type=finding_type, extra_context=extra_context)
 
         attempt = {
             'attempt': attempt_num,
             'backend': backend,
             'explanation': patch_result.get('explanation', ''),
+            'patched_code': patch_result.get('patched_code', ''),
             'syntax_valid': patch_result.get('syntax_valid', False),
             'syntax_error': patch_result.get('syntax_error'),
             'failure_reason': None,
@@ -49,8 +50,8 @@ def generate_and_validate_with_retry(diagnosis, evidence, current_code, finding_
             cleanup_sandbox(baseline_sandbox['sandbox_path'])
             cleanup_sandbox(patched_sandbox['sandbox_path'])
 
-        regression = check_no_regression(baseline_result, patched_result)
-        issue = check_issue_addressed(finding_type, baseline_result, patched_result)
+        regression = check_no_regression(baseline_result, patched_result, evidence)
+        issue = check_issue_addressed(finding_type, baseline_result, patched_result, evidence)
 
         attempt['regression_check'] = regression
         attempt['issue_check'] = issue

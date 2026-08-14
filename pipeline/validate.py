@@ -1,11 +1,9 @@
 import pandas as pd
 
 
-def check_no_regression(baseline_result, patched_result):
+def check_no_regression(baseline_result, patched_result, evidence):
     """Checks that the patch didn't break anything unrelated.
-    Compares baseline and patched pipeline outputs — rows shared by both
-    (matched on order_id) must be identical. Row count must be equal.
-    Returns a dict with passed (bool) and explanation (str)."""
+    Only rows listed in evidence['affected_rows'] are permitted to differ, disappear, or appear."""
 
     if baseline_result['exit_code'] != 0:
         return {'passed': False, 'explanation': f"Baseline pipeline failed (exit code {baseline_result['exit_code']})"}
@@ -20,11 +18,7 @@ def check_no_regression(baseline_result, patched_result):
     baseline_df = baseline_result['output_df']
     patched_df = patched_result['output_df']
 
-    if len(baseline_df) != len(patched_df):
-        return {
-            'passed': False,
-            'explanation': f"Row count changed: baseline has {len(baseline_df)} rows, patched has {len(patched_df)} rows"
-        }
+    affected_ids = {row['order_id'] for row in evidence.get('affected_rows', [])}
 
     # Find rows present in both outputs (by order_id) and check they're identical
     shared = pd.merge(baseline_df, patched_df, on='order_id', suffixes=('_baseline', '_patched'))
@@ -33,7 +27,8 @@ def check_no_regression(baseline_result, patched_result):
     for col in base_cols:
         mismatches = shared[shared[f'{col}_baseline'] != shared[f'{col}_patched']]
         for _, row in mismatches.iterrows():
-            diffs.append(f"order_id {row['order_id']}: {col} changed from '{row[f'{col}_baseline']}' to '{row[f'{col}_patched']}'")
+            if row['order_id'] not in affected_ids:
+                diffs.append(f"order_id {row['order_id']}: {col} changed from '{row[f'{col}_baseline']}' to '{row[f'{col}_patched']}'")
 
     if diffs:
         return {'passed': False, 'explanation': f"Unrelated rows changed: {'; '.join(diffs)}"}
@@ -41,28 +36,92 @@ def check_no_regression(baseline_result, patched_result):
     # Check for order_ids that swapped (present in one but not the other)
     baseline_ids = set(baseline_df['order_id'])
     patched_ids = set(patched_df['order_id'])
+    
     only_baseline = baseline_ids - patched_ids
     only_patched = patched_ids - baseline_ids
+    
+    unrelated_swapped_out = only_baseline - affected_ids
+    unrelated_swapped_in = only_patched - affected_ids
+    
+    if unrelated_swapped_out or unrelated_swapped_in:
+        msg = []
+        if unrelated_swapped_out:
+            msg.append(f"Unrelated rows dropped: {unrelated_swapped_out}")
+        if unrelated_swapped_in:
+            msg.append(f"Unrelated rows added: {unrelated_swapped_in}")
+        return {'passed': False, 'explanation': "; ".join(msg)}
 
     return {
         'passed': True,
         'explanation': (
             f"No regression: {len(shared)} shared rows are identical"
-            + (f", {len(only_baseline)} row(s) swapped out, {len(only_patched)} swapped in (expected for the fix)" if only_baseline else "")
+            + (f", {len(only_baseline)} expected row(s) swapped out, {len(only_patched)} expected swapped in" if (only_baseline or only_patched) else "")
         )
     }
 
 
-def check_issue_addressed(finding_type, baseline_result, patched_result):
+def check_issue_addressed(finding_type, baseline_result, patched_result, evidence=None):
     """Checks case-specific expectations from benchmark.md for a given failure type.
     Returns a dict with passed (bool or None), and explanation (str)."""
 
     if finding_type == 'duplicate_transaction_id':
         return _check_duplicate_fix(baseline_result, patched_result)
+    elif finding_type == 'suspicious_zero_price':
+        return _check_flagged_fix(patched_result, evidence, expected_reason="suspicious zero price")
 
     return {
         'passed': None,
         'explanation': f"No defined check for '{finding_type}' yet"
+    }
+
+
+def _check_flagged_fix(patched_result, evidence, expected_reason):
+    """Verifies the affected rows are removed from processed_orders.csv and written to flagged_orders.csv with the correct flag_reason."""
+    
+    if not patched_result['output_csv_exists']:
+        return {'passed': False, 'explanation': 'Cannot validate — output missing'}
+        
+    patched_df = patched_result['output_df']
+    affected_ids = {row['order_id'] for row in evidence.get('affected_rows', [])}
+    
+    # 1. Verify rows are removed from main output
+    remaining_affected = set(patched_df['order_id']).intersection(affected_ids)
+    if remaining_affected:
+        return {'passed': False, 'explanation': f"Failed to exclude affected rows from main output: {remaining_affected} still present"}
+        
+    # 2. Verify flagged_orders.csv exists and contains them
+    if not patched_result.get('flagged_csv_exists'):
+        return {'passed': False, 'explanation': "data/flagged_orders.csv was not created"}
+        
+    flagged_df = patched_result['flagged_df']
+    if 'order_id' not in flagged_df.columns:
+        return {'passed': False, 'explanation': "data/flagged_orders.csv is missing the 'order_id' column (was it written without headers?)"}
+    flagged_ids = set(flagged_df['order_id'])
+    
+    missing_from_flagged = affected_ids - flagged_ids
+    if missing_from_flagged:
+        return {'passed': False, 'explanation': f"Rows {missing_from_flagged} were dropped entirely and not preserved in flagged_orders.csv"}
+        
+    # 3. Verify the flag_reason is correct
+    if 'flag_reason' not in flagged_df.columns:
+        return {'passed': False, 'explanation': "data/flagged_orders.csv is missing the 'flag_reason' column"}
+        
+    invalid_reasons = flagged_df[~flagged_df['order_id'].isin(affected_ids)]
+    if not invalid_reasons.empty:
+        # Check if rows that match our affected_ids have the right reason
+        flagged_affected = flagged_df[flagged_df['order_id'].isin(affected_ids)]
+        wrong_reason = flagged_affected[flagged_affected['flag_reason'] != expected_reason]
+        if not wrong_reason.empty:
+            return {'passed': False, 'explanation': f"Rows were flagged with incorrect reason. Expected '{expected_reason}'"}
+    else:
+        # Check all rows in flagged_df since they are exactly our affected_ids
+        wrong_reason = flagged_df[flagged_df['flag_reason'] != expected_reason]
+        if not wrong_reason.empty:
+            return {'passed': False, 'explanation': f"Rows were flagged with incorrect reason. Expected '{expected_reason}'"}
+
+    return {
+        'passed': True,
+        'explanation': f"Affected rows properly excluded from processed_orders.csv and preserved in flagged_orders.csv with reason '{expected_reason}'"
     }
 
 
