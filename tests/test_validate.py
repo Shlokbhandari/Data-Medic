@@ -176,3 +176,22 @@ def test_duplicate_fix_fails_gracefully_on_missing_columns():
     assert res['passed'] is False
     assert "missing the 'transaction_id' column" in res['explanation']
 
+
+def test_flagged_fix_fails_when_flagged_row_not_in_evidence():
+    # Setup patched result where the main pipeline properly removed the row,
+    # but the evidence says no rows were affected (empty list).
+    patched = _make_result(SHARED_ROWS)
+    patched['flagged_csv_exists'] = True
+    
+    # flagged_orders.csv has row 1003 flagged properly...
+    patched['flagged_df'] = pd.DataFrame([
+        {'order_id': 1003, 'flag_reason': 'suspicious zero price'}
+    ])
+    
+    # ...but evidence says 0 affected rows!
+    evidence = {'affected_rows': []}
+    
+    # This should fail because row 1003 is flagged but not in evidence['affected_rows']
+    res = check_issue_addressed('suspicious_zero_price', patched, patched, evidence)
+    assert res['passed'] is False
+    assert "Rows [1003] were flagged but were not part of the expected affected rows" in res['explanation']
