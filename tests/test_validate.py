@@ -130,3 +130,49 @@ def test_unknown_finding_type_returns_none():
     result = check_issue_addressed('some_future_type', baseline, patched, evidence)
     assert result['passed'] is None
     assert 'no defined check' in result['explanation'].lower()
+
+
+# --- Schema guards: missing columns return structured failures without raising exceptions ---
+
+def test_regression_fails_gracefully_on_missing_column():
+    baseline = _make_result(SHARED_ROWS)
+    # Patched output is missing the price column
+    bad_rows = [{'order_id': r['order_id'], 'customer_email': r['customer_email']} for r in SHARED_ROWS]
+    patched = _make_result(bad_rows)
+    evidence = {'affected_rows': []}
+
+    regression = check_no_regression(baseline, patched, evidence)
+    assert regression['passed'] is False
+    assert "missing column" in regression['explanation'].lower()
+
+
+def test_flagged_fix_fails_gracefully_on_missing_flag_reason_or_order_id():
+    patched = _make_result(SHARED_ROWS)
+    patched['flagged_csv_exists'] = True
+    
+    # Flagged DF without order_id column
+    patched['flagged_df'] = pd.DataFrame([{'bad_col': 'val'}])
+    evidence = {'affected_rows': [{'order_id': 999}]}
+    
+    res = check_issue_addressed('suspicious_zero_price', patched, patched, evidence)
+    assert res['passed'] is False
+    assert "missing the 'order_id' column" in res['explanation']
+
+    # Flagged DF without flag_reason column
+    patched['flagged_df'] = pd.DataFrame([{'order_id': 999}])
+    res = check_issue_addressed('suspicious_zero_price', patched, patched, evidence)
+    assert res['passed'] is False
+    assert "missing the 'flag_reason' column" in res['explanation']
+
+
+def test_duplicate_fix_fails_gracefully_on_missing_columns():
+    # Patched output is missing transaction_id
+    bad_rows = [{'order_id': 1001, 'order_date': '2026-08-01'}]
+    baseline = _make_result(SHARED_ROWS)
+    patched = _make_result(bad_rows)
+    evidence = {'affected_rows': [{'order_id': 1001}]}
+
+    res = check_issue_addressed('duplicate_transaction_id', baseline, patched, evidence)
+    assert res['passed'] is False
+    assert "missing the 'transaction_id' column" in res['explanation']
+

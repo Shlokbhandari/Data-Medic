@@ -5,30 +5,48 @@ def check_no_regression(baseline_result, patched_result, evidence):
     """Checks that the patch didn't break anything unrelated.
     Only rows listed in evidence['affected_rows'] are permitted to differ, disappear, or appear."""
 
-    if baseline_result['exit_code'] != 0:
-        return {'passed': False, 'explanation': f"Baseline pipeline failed (exit code {baseline_result['exit_code']})"}
-    if patched_result['exit_code'] != 0:
-        return {'passed': False, 'explanation': f"Patched pipeline failed (exit code {patched_result['exit_code']}): {patched_result['stderr']}"}
+    if baseline_result.get('exit_code') != 0:
+        return {'passed': False, 'explanation': f"Baseline pipeline failed (exit code {baseline_result.get('exit_code')})"}
+    if patched_result.get('exit_code') != 0:
+        return {'passed': False, 'explanation': f"Patched pipeline failed (exit code {patched_result.get('exit_code')}): {patched_result.get('stderr', '')}"}
 
-    if not baseline_result['output_csv_exists']:
+    if not baseline_result.get('output_csv_exists'):
         return {'passed': False, 'explanation': 'Baseline pipeline did not produce an output CSV'}
-    if not patched_result['output_csv_exists']:
+    if not patched_result.get('output_csv_exists'):
         return {'passed': False, 'explanation': 'Patched pipeline did not produce an output CSV'}
 
-    baseline_df = baseline_result['output_df']
-    patched_df = patched_result['output_df']
+    baseline_df = baseline_result.get('output_df')
+    patched_df = patched_result.get('output_df')
 
-    affected_ids = {row['order_id'] for row in evidence.get('affected_rows', [])}
+    if baseline_df is None or not isinstance(baseline_df, pd.DataFrame):
+        return {'passed': False, 'explanation': 'Baseline pipeline output dataframe is missing or invalid'}
+    if patched_df is None or not isinstance(patched_df, pd.DataFrame):
+        return {'passed': False, 'explanation': 'Patched pipeline output dataframe is missing or invalid'}
+
+    evidence = evidence or {}
+    affected_ids = {row['order_id'] for row in evidence.get('affected_rows', []) if isinstance(row, dict) and 'order_id' in row}
+
+    if 'order_id' not in baseline_df.columns:
+        return {'passed': False, 'explanation': "Baseline output is missing the 'order_id' column"}
+    if 'order_id' not in patched_df.columns:
+        return {'passed': False, 'explanation': "Patched pipeline output (processed_orders.csv) is missing the 'order_id' column"}
+
+    missing_cols = set(baseline_df.columns) - set(patched_df.columns)
+    if missing_cols:
+        return {'passed': False, 'explanation': f"Patched pipeline output is missing column(s): {', '.join(sorted(missing_cols))}"}
 
     # Find rows present in both outputs (by order_id) and check they're identical
     shared = pd.merge(baseline_df, patched_df, on='order_id', suffixes=('_baseline', '_patched'))
     diffs = []
     base_cols = [c for c in baseline_df.columns if c != 'order_id']
     for col in base_cols:
-        mismatches = shared[shared[f'{col}_baseline'] != shared[f'{col}_patched']]
-        for _, row in mismatches.iterrows():
-            if row['order_id'] not in affected_ids:
-                diffs.append(f"order_id {row['order_id']}: {col} changed from '{row[f'{col}_baseline']}' to '{row[f'{col}_patched']}'")
+        col_base = f'{col}_baseline'
+        col_patch = f'{col}_patched'
+        if col_base in shared.columns and col_patch in shared.columns:
+            mismatches = shared[shared[col_base] != shared[col_patch]]
+            for _, row in mismatches.iterrows():
+                if row['order_id'] not in affected_ids:
+                    diffs.append(f"order_id {row['order_id']}: {col} changed from '{row[col_base]}' to '{row[col_patch]}'")
 
     if diffs:
         return {'passed': False, 'explanation': f"Unrelated rows changed: {'; '.join(diffs)}"}
@@ -80,11 +98,18 @@ def check_issue_addressed(finding_type, baseline_result, patched_result, evidenc
 def _check_flagged_fix(patched_result, evidence, expected_reason):
     """Verifies the affected rows are removed from processed_orders.csv and written to flagged_orders.csv with the correct flag_reason."""
     
-    if not patched_result['output_csv_exists']:
+    if not patched_result.get('output_csv_exists'):
         return {'passed': False, 'explanation': 'Cannot validate — output missing'}
         
-    patched_df = patched_result['output_df']
-    affected_ids = {row['order_id'] for row in evidence.get('affected_rows', [])}
+    patched_df = patched_result.get('output_df')
+    if patched_df is None or not isinstance(patched_df, pd.DataFrame):
+        return {'passed': False, 'explanation': 'Cannot validate — output DataFrame missing'}
+
+    evidence = evidence or {}
+    affected_ids = {row['order_id'] for row in evidence.get('affected_rows', []) if isinstance(row, dict) and 'order_id' in row}
+
+    if 'order_id' not in patched_df.columns:
+        return {'passed': False, 'explanation': "Patched pipeline output (processed_orders.csv) is missing the 'order_id' column"}
     
     # 1. Verify rows are removed from main output
     remaining_affected = set(patched_df['order_id']).intersection(affected_ids)
@@ -95,7 +120,10 @@ def _check_flagged_fix(patched_result, evidence, expected_reason):
     if not patched_result.get('flagged_csv_exists'):
         return {'passed': False, 'explanation': "data/flagged_orders.csv was not created"}
         
-    flagged_df = patched_result['flagged_df']
+    flagged_df = patched_result.get('flagged_df')
+    if flagged_df is None or not isinstance(flagged_df, pd.DataFrame):
+        return {'passed': False, 'explanation': "data/flagged_orders.csv could not be loaded as a valid DataFrame"}
+
     if 'order_id' not in flagged_df.columns:
         return {'passed': False, 'explanation': "data/flagged_orders.csv is missing the 'order_id' column (was it written without headers?)"}
     flagged_ids = set(flagged_df['order_id'])
@@ -131,11 +159,20 @@ def _check_duplicate_fix(baseline_result, patched_result):
     """For the duplicate-transaction-id case: verifies the patched output
     kept the row with the earliest order_date among the duplicated rows."""
 
-    if not baseline_result['output_csv_exists'] or not patched_result['output_csv_exists']:
+    if not baseline_result.get('output_csv_exists') or not patched_result.get('output_csv_exists'):
         return {'passed': False, 'explanation': 'Cannot validate — one or both outputs missing'}
 
-    baseline_df = baseline_result['output_df']
-    patched_df = patched_result['output_df']
+    baseline_df = baseline_result.get('output_df')
+    patched_df = patched_result.get('output_df')
+
+    if baseline_df is None or not isinstance(baseline_df, pd.DataFrame) or patched_df is None or not isinstance(patched_df, pd.DataFrame):
+        return {'passed': False, 'explanation': 'Cannot validate — one or both output DataFrames missing'}
+
+    for col in ['order_id', 'transaction_id', 'order_date']:
+        if col not in baseline_df.columns:
+            return {'passed': False, 'explanation': f"Baseline output is missing the '{col}' column"}
+        if col not in patched_df.columns:
+            return {'passed': False, 'explanation': f"Patched pipeline output is missing the '{col}' column"}
 
     # No duplicate transaction_ids should remain in either output
     baseline_dups = baseline_df[baseline_df.duplicated(subset='transaction_id', keep=False)]
@@ -151,7 +188,6 @@ def _check_duplicate_fix(baseline_result, patched_result):
 
     if not swapped_out and not swapped_in:
         # Both outputs kept the same row — this is valid if that row already had the earliest date
-        # (e.g. both duplicates share the same order_date)
         return {
             'passed': True,
             'explanation': 'Both baseline and patched outputs kept the same row — the existing row already had the earliest order_date, so the patch added the guarantee without changing the result'
