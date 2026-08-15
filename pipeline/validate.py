@@ -138,16 +138,11 @@ def _check_flagged_fix(patched_result, evidence, expected_reason):
         
     invalid_reasons = flagged_df[~flagged_df['order_id'].isin(affected_ids)]
     if not invalid_reasons.empty:
-        # Check if rows that match our affected_ids have the right reason
-        flagged_affected = flagged_df[flagged_df['order_id'].isin(affected_ids)]
-        wrong_reason = flagged_affected[flagged_affected['flag_reason'] != expected_reason]
-        if not wrong_reason.empty:
-            return {'passed': False, 'explanation': f"Rows were flagged with incorrect reason. Expected '{expected_reason}'"}
-    else:
-        # Check all rows in flagged_df since they are exactly our affected_ids
-        wrong_reason = flagged_df[flagged_df['flag_reason'] != expected_reason]
-        if not wrong_reason.empty:
-            return {'passed': False, 'explanation': f"Rows were flagged with incorrect reason. Expected '{expected_reason}'"}
+        return {'passed': False, 'explanation': f"Rows {invalid_reasons['order_id'].tolist()} were flagged but were not part of the expected affected rows"}
+        
+    wrong_reason = flagged_df[flagged_df['flag_reason'] != expected_reason]
+    if not wrong_reason.empty:
+        return {'passed': False, 'explanation': f"Rows were flagged with incorrect reason. Expected '{expected_reason}'"}
 
     return {
         'passed': True,
