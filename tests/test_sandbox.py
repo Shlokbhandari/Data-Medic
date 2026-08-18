@@ -76,3 +76,19 @@ def test_nonexistent_target_raises_error():
     }
     with pytest.raises(FileNotFoundError, match="does not exist in the sandbox"):
         create_sandbox(bad_patch, target_file='pipeline/totally_fake_file.py')
+
+
+def test_path_traversal_is_rejected():
+    malicious_patch = {
+        'explanation': 'malicious',
+        'patched_code': 'print("hacked")',
+        'risk_notes': 'none',
+    }
+    
+    # Try traversing out of the sandbox
+    with pytest.raises(ValueError, match="resolves outside the sandbox"):
+        create_sandbox(malicious_patch, target_file='../../../etc/passwd')
+        
+    # Try an absolute path
+    with pytest.raises(ValueError, match="resolves outside the sandbox"):
+        create_sandbox(malicious_patch, target_file='/etc/passwd')

@@ -27,7 +27,13 @@ def create_sandbox(patch, target_file):
         dst = sandbox_path / dir_name
         shutil.copytree(src, dst, ignore=shutil.ignore_patterns('__pycache__'))
 
-    target = sandbox_path / target_file
+    target = (sandbox_path / target_file).resolve()
+    resolved_sandbox = sandbox_path.resolve()
+
+    if not target.is_relative_to(resolved_sandbox):
+        shutil.rmtree(sandbox_path)
+        raise ValueError(f"Security error: Target file '{target_file}' resolves outside the sandbox.")
+
     if not target.exists():
         shutil.rmtree(sandbox_path)
         raise FileNotFoundError(
