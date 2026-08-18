@@ -11,7 +11,7 @@ def inference(prompt):
         client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
         chat_completion = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
         )
         return chat_completion.choices[0].message.content, "Groq"
     # If Groq fails, fall back to Ollama
