@@ -1,3 +1,4 @@
+from confidence_gate import should_proceed
 from patch import generate_patch
 from sandbox import create_sandbox, run_in_sandbox, cleanup_sandbox
 from validate import check_no_regression, check_issue_addressed
@@ -6,8 +7,21 @@ from validate import check_no_regression, check_issue_addressed
 def generate_and_validate_with_retry(diagnosis, evidence, current_code, finding_type, max_attempts=3):
     """Attempts to generate a valid, passing patch with informed retries.
 
+    First checks the confidence gate — if confidence is below threshold or unparseable,
+    refuses to generate patches and escalates immediately.
     Each failed attempt feeds its specific failure reason into the next attempt
     so the LLM can adjust. Returns the final result with full attempt history."""
+
+    gate = should_proceed(diagnosis)
+    if gate['decision'] != 'proceed':
+        return {
+            'success': False,
+            'patch': None,
+            'backend': None,
+            'attempts': [],
+            'total_attempts': 0,
+            'escalation_reason': f"Confidence gate refused to proceed: {gate.get('reason')}",
+        }
 
     attempts = []
 

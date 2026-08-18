@@ -27,3 +27,15 @@ def test_missing_confidence_returns_escalate():
     diagnosis = {'root_cause': 'unknown', 'reasoning': 'no confidence given'}
     result = should_proceed(diagnosis)
     assert result['decision'] == 'escalate'
+
+
+def test_non_numeric_confidence_returns_escalate():
+    # String or malformed values like '0. nine' or 'high' must safely escalate
+    diagnosis = {'root_cause': 'unknown', 'confidence': '0. nine', 'reasoning': 'malformed float'}
+    result = should_proceed(diagnosis)
+    assert result['decision'] == 'escalate'
+
+    diagnosis_text = {'root_cause': 'unknown', 'confidence': 'high', 'reasoning': 'text confidence'}
+    result_text = should_proceed(diagnosis_text)
+    assert result_text['decision'] == 'escalate'
+

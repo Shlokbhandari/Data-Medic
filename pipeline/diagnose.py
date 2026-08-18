@@ -19,7 +19,7 @@ Affected row(s):
 
 Based ONLY on this evidence, respond with a JSON object containing exactly these fields:
 - "root_cause": a plain-English explanation of why this likely happened
-- "confidence": a number from 0 to 1, how certain you are given the evidence available
+- "confidence": a number from 0 to 1 as a numeric float (e.g. 0.85, not words/text), how certain you are given the evidence available
 - "reasoning": a short explanation of what evidence supports this confidence level, and what's missing or uncertain
 
 Respond with ONLY the JSON object, no other text before or after it."""

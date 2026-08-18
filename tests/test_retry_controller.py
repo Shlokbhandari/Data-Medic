@@ -120,3 +120,42 @@ def test_all_attempts_fail_returns_escalation():
     assert len(result['attempts']) == 3
     for attempt in result['attempts']:
         assert attempt['failure_reason'] is not None
+
+
+def test_unparseable_diagnosis_escalates_immediately():
+    """A diagnosis that failed to parse (confidence=0) must be blocked by the confidence gate immediately."""
+    unparseable_diagnosis = {
+        'root_cause': 'Could not parse LLM response',
+        'confidence': 0,
+        'reasoning': 'Raw response: invalid json syntax'
+    }
+
+    with patch('retry_controller.generate_patch') as mock_gen:
+        result = generate_and_validate_with_retry(
+            unparseable_diagnosis, SAMPLE_EVIDENCE, CURRENT_CODE, 'duplicate_transaction_id'
+        )
+
+    assert result['success'] is False
+    assert result['total_attempts'] == 0
+    assert mock_gen.call_count == 0
+    assert 'Confidence gate refused to proceed' in result['escalation_reason']
+    assert 'below the 0.7 threshold' in result['escalation_reason']
+
+
+def test_low_confidence_diagnosis_escalates_immediately():
+    """A diagnosis with confidence below threshold must not generate patches."""
+    low_conf_diagnosis = {
+        'root_cause': 'Uncertain possibility',
+        'confidence': 0.5,
+        'reasoning': 'Not enough evidence'
+    }
+
+    with patch('retry_controller.generate_patch') as mock_gen:
+        result = generate_and_validate_with_retry(
+            low_conf_diagnosis, SAMPLE_EVIDENCE, CURRENT_CODE, 'duplicate_transaction_id'
+        )
+
+    assert result['success'] is False
+    assert result['total_attempts'] == 0
+    assert mock_gen.call_count == 0
+    assert 'Confidence gate refused to proceed' in result['escalation_reason']

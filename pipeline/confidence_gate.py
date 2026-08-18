@@ -6,6 +6,10 @@ def should_proceed(diagnosis):
     Returns a dict with the decision and a plain-English reason."""
 
     confidence = diagnosis.get('confidence', 0)
+    try:
+        confidence = float(confidence)
+    except (ValueError, TypeError):
+        confidence = 0.0
 
     if confidence >= CONFIDENCE_THRESHOLD:
         return {
