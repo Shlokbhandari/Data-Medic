@@ -85,3 +85,57 @@ def test_create_fix_branch(dummy_git_repo):
     assert 'Fix duplicate_transaction_id' in commit_msg
     assert 'Sorted duplicates by date' in commit_msg
     assert 'Upstream system occasionally resends' in commit_msg
+
+
+def test_create_fix_branch_dirty_state_raises_error(dummy_git_repo):
+    repo_dir, original_branch, target_file_rel = dummy_git_repo
+    
+    # Make the repo dirty
+    (repo_dir / "untracked_file.txt").write_text("dirty")
+    
+    with pytest.raises(RuntimeError, match="working directory is not clean"):
+        create_fix_branch(
+            patch_result={'patched_code': 'fake'},
+            diagnosis={'root_cause': 'fake'},
+            finding_type='test',
+            target_file=target_file_rel,
+            repo_path=str(repo_dir)
+        )
+        
+    # Confirm it stayed on the original branch
+    current_branch = subprocess.run(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], 
+                                    cwd=repo_dir, capture_output=True, text=True).stdout.strip()
+    assert current_branch == original_branch
+
+
+def test_create_fix_branch_mid_operation_failure_restores_clean_state(dummy_git_repo, monkeypatch):
+    repo_dir, original_branch, target_file_rel = dummy_git_repo
+    
+    # We will simulate a failure during 'git commit' by replacing subprocess.run
+    original_run = subprocess.run
+    
+    def mocked_run(args, **kwargs):
+        if args[:2] == ['git', 'commit']:
+            raise RuntimeError("Simulated failure during commit")
+        return original_run(args, **kwargs)
+        
+    monkeypatch.setattr(subprocess, "run", mocked_run)
+    
+    with pytest.raises(RuntimeError, match="Simulated failure during commit"):
+        create_fix_branch(
+            patch_result={'patched_code': 'print("patched code")\n', 'explanation': 'test'},
+            diagnosis={'root_cause': 'fake'},
+            finding_type='test',
+            target_file=target_file_rel,
+            repo_path=str(repo_dir)
+        )
+        
+    # Check that we are back on original branch
+    current_branch = subprocess.run(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], 
+                                    cwd=repo_dir, capture_output=True, text=True).stdout.strip()
+    assert current_branch == original_branch
+    
+    # Check that repo is clean
+    status = subprocess.run(['git', 'status', '--porcelain'], 
+                            cwd=repo_dir, capture_output=True, text=True).stdout.strip()
+    assert status == ""

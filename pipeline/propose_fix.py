@@ -8,6 +8,13 @@ def create_fix_branch(patch_result, diagnosis, finding_type, target_file='pipeli
     Creates a new local git branch, applies the validated patch, commits it with a meaningful message,
     and returns to the original branch, leaving the working directory completely clean.
     """
+    # 0. Precondition: Ensure the working directory is clean before we start
+    status_result = subprocess.run(['git', 'status', '--porcelain'], 
+                                   cwd=repo_path, capture_output=True, text=True, check=True)
+    if status_result.stdout.strip():
+        raise RuntimeError("Refusing to proceed: The working directory is not clean. "
+                           "Please commit or stash your changes before running DataMedic.")
+
     # 1. Get current branch name so we can restore it later
     result = subprocess.run(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], 
                             cwd=repo_path, capture_output=True, text=True, check=True)
@@ -36,6 +43,10 @@ def create_fix_branch(patch_result, diagnosis, finding_type, target_file='pipeli
         
     finally:
         # 5. Restore original branch (leaves working directory clean/unpatched)
+        # Guarantee no dirty state is carried over if a failure occurred mid-operation
+        subprocess.run(['git', 'reset', '--hard', 'HEAD'], cwd=repo_path, check=True, capture_output=True)
+        subprocess.run(['git', 'clean', '-fd'], cwd=repo_path, check=True, capture_output=True)
+        
         subprocess.run(['git', 'checkout', original_branch], cwd=repo_path, check=True, capture_output=True)
         
     return branch_name
