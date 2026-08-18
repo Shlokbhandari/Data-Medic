@@ -13,12 +13,14 @@ IDENTITY_PATCH = {
     'explanation': 'no change',
     'patched_code': (PROJECT_ROOT / 'pipeline' / 'run_pipeline.py').read_text(),
     'risk_notes': 'none',
+    'syntax_valid': True,
 }
 
 BROKEN_PATCH = {
     'explanation': 'deliberately broken',
     'patched_code': 'raise RuntimeError("intentional crash")\n',
     'risk_notes': 'none',
+    'syntax_valid': True,
 }
 
 

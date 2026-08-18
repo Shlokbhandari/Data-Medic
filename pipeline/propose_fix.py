@@ -8,6 +8,9 @@ def create_fix_branch(patch_result, diagnosis, finding_type, target_file='pipeli
     Creates a new local git branch, applies the validated patch, commits it with a meaningful message,
     and returns to the original branch, leaving the working directory completely clean.
     """
+    if patch_result.get('syntax_valid') is not True:
+        raise ValueError("Refusing to proceed: Patch contains invalid syntax (syntax_valid is not True).")
+
     # 0. Precondition: Ensure the working directory is clean before we start
     status_result = subprocess.run(['git', 'status', '--porcelain'], 
                                    cwd=repo_path, capture_output=True, text=True, check=True)

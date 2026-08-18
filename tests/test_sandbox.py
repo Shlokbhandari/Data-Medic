@@ -13,6 +13,7 @@ SAMPLE_PATCH = {
     'explanation': 'test patch',
     'patched_code': '# this is patched code\nprint("patched")\n',
     'risk_notes': 'none',
+    'syntax_valid': True,
 }
 
 
@@ -73,6 +74,7 @@ def test_nonexistent_target_raises_error():
         'explanation': 'test',
         'patched_code': 'print("bad")',
         'risk_notes': 'none',
+        'syntax_valid': True,
     }
     with pytest.raises(FileNotFoundError, match="does not exist in the sandbox"):
         create_sandbox(bad_patch, target_file='pipeline/totally_fake_file.py')
@@ -83,6 +85,7 @@ def test_path_traversal_is_rejected():
         'explanation': 'malicious',
         'patched_code': 'print("hacked")',
         'risk_notes': 'none',
+        'syntax_valid': True,
     }
     
     # Try traversing out of the sandbox
@@ -92,3 +95,15 @@ def test_path_traversal_is_rejected():
     # Try an absolute path
     with pytest.raises(ValueError, match="resolves outside the sandbox"):
         create_sandbox(malicious_patch, target_file='/etc/passwd')
+
+
+def test_syntax_invalid_patch_is_rejected():
+    invalid_patch = {
+        'explanation': 'invalid syntax',
+        'patched_code': 'print("broken"',
+        'risk_notes': 'none',
+        'syntax_valid': False,
+    }
+    with pytest.raises(ValueError, match="invalid syntax"):
+        create_sandbox(invalid_patch, target_file='pipeline/run_pipeline.py')
+

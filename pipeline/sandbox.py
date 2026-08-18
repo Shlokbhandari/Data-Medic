@@ -20,6 +20,9 @@ def create_sandbox(patch, target_file):
     The patch dict must have a 'patched_code' field (as returned by generate_patch()).
     The target_file is a path relative to the project root."""
 
+    if patch.get('syntax_valid') is not True:
+        raise ValueError("Refusing to proceed: Patch contains invalid syntax (syntax_valid is not True).")
+
     sandbox_path = Path(tempfile.mkdtemp(prefix='datamedic_sandbox_'))
 
     for dir_name in DIRS_TO_COPY:

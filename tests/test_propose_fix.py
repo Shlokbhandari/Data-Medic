@@ -45,7 +45,8 @@ def test_create_fix_branch(dummy_git_repo):
     
     patch_result = {
         'patched_code': 'print("patched code")\n',
-        'explanation': 'Sorted duplicates by date so the oldest is kept.'
+        'explanation': 'Sorted duplicates by date so the oldest is kept.',
+        'syntax_valid': True,
     }
     diagnosis = {
         'root_cause': 'Upstream system occasionally resends the exact same transaction ID.'
@@ -95,7 +96,7 @@ def test_create_fix_branch_dirty_state_raises_error(dummy_git_repo):
     
     with pytest.raises(RuntimeError, match="working directory is not clean"):
         create_fix_branch(
-            patch_result={'patched_code': 'fake'},
+            patch_result={'patched_code': 'fake', 'syntax_valid': True},
             diagnosis={'root_cause': 'fake'},
             finding_type='test',
             target_file=target_file_rel,
@@ -123,7 +124,7 @@ def test_create_fix_branch_mid_operation_failure_restores_clean_state(dummy_git_
     
     with pytest.raises(RuntimeError, match="Simulated failure during commit"):
         create_fix_branch(
-            patch_result={'patched_code': 'print("patched code")\n', 'explanation': 'test'},
+            patch_result={'patched_code': 'print("patched code")\n', 'explanation': 'test', 'syntax_valid': True},
             diagnosis={'root_cause': 'fake'},
             finding_type='test',
             target_file=target_file_rel,
@@ -139,3 +140,16 @@ def test_create_fix_branch_mid_operation_failure_restores_clean_state(dummy_git_
     status = subprocess.run(['git', 'status', '--porcelain'], 
                             cwd=repo_dir, capture_output=True, text=True).stdout.strip()
     assert status == ""
+
+
+def test_create_fix_branch_syntax_invalid_patch_is_rejected(dummy_git_repo):
+    repo_dir, _, target_file_rel = dummy_git_repo
+    with pytest.raises(ValueError, match="invalid syntax"):
+        create_fix_branch(
+            patch_result={'patched_code': 'fake', 'syntax_valid': False},
+            diagnosis={'root_cause': 'fake'},
+            finding_type='test',
+            target_file=target_file_rel,
+            repo_path=str(repo_dir)
+        )
+
