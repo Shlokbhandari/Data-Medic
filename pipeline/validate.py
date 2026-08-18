@@ -88,6 +88,9 @@ def check_issue_addressed(finding_type, baseline_result, patched_result, evidenc
         return _check_flagged_fix(patched_result, evidence, expected_reason="suspicious zero price")
     elif finding_type == 'missing_price':
         return _check_flagged_fix(patched_result, evidence, expected_reason="missing price")
+    elif finding_type == 'baseline_drift':
+        col = evidence.get('column', 'unknown') if evidence else 'unknown'
+        return _check_flagged_fix(patched_result, evidence, expected_reason=f"baseline drift: unexpected nulls in {col}")
 
     return {
         'passed': None,

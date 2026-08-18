@@ -27,7 +27,12 @@ def collect_evidence(finding, df):
     except FileNotFoundError:
         evidence['current_pipeline_code'] = None
 
-    if finding['severity'] == 'high' and column == 'transaction_id':
+    if finding.get('affected_row_indices'):
+        indices = finding['affected_row_indices']
+        evidence['affected_rows'] = df.loc[indices].to_dict('records')
+        evidence['total_affected_in_dataset'] = len(indices)
+
+    elif finding['severity'] == 'high' and column == 'transaction_id':
         # Grab all rows that share this duplicated value
         dup_value = df.loc[finding['row'], 'transaction_id']
         matching = df[df['transaction_id'] == dup_value]

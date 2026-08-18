@@ -130,6 +130,17 @@ def generate_patch(diagnosis, evidence, current_code, finding_type=None, extra_c
         finding_specific_rules = "- IMPORTANT FOR $0 PRICE ISSUES: You must NOT permanently drop rows with a price of exactly 0.0. Instead, you must isolate them: select the rows where price == 0.0, add a new column `flag_reason` set to 'suspicious zero price', write them to a new file 'data/flagged_orders.csv' (with index=False), and then exclude them from the main DataFrame before it is written to 'data/processed_orders.csv'."
     elif finding_type == 'missing_price':
         finding_specific_rules = "- IMPORTANT FOR MISSING PRICE ISSUES: The pipeline currently drops rows with a missing price. You must change this so the data is not silently lost. You must isolate them: select the rows where price is missing, add a new column `flag_reason` set to 'missing price', write them to a new file 'data/flagged_orders.csv' (with index=False, or append if it exists), and then exclude them from the main DataFrame before it is written to 'data/processed_orders.csv'."
+    elif finding_type == 'baseline_drift':
+        col = evidence.get('column', 'unknown')
+        finding_specific_rules = (
+            f"- IMPORTANT FOR BASELINE DRIFT / UNEXPECTED NULL ISSUES: The evidence contains ALL rows affected by this anomaly, not just a single row. "
+            f"You must handle EVERY row listed in the evidence's affected rows. "
+            f"For each affected row, isolate it: select ALL rows where the column '{col}' is null, "
+            f"add a new column `flag_reason` set to 'baseline drift: unexpected nulls in {col}', "
+            f"write ALL of them to 'data/flagged_orders.csv' (with index=False, or append if it already exists), "
+            f"and then exclude ALL of them from the main DataFrame before it is written to 'data/processed_orders.csv'. "
+            f"Do NOT handle only one row — you must catch every row where the column value is null."
+        )
 
     prompt = PATCH_PROMPT_TEMPLATE.format(
         root_cause=diagnosis.get('root_cause', 'unknown'),
