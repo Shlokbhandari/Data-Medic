@@ -22,3 +22,6 @@ Thumbs.db
 # Local-only files (not pushed to GitHub)
 .agents/
 context.md
+
+# Personal reference docs, not part of the project
+*.pages
