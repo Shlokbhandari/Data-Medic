@@ -1,0 +1,181 @@
+row_index,order_id,defect_type,category,effective,description
+2267,12268,duplicate_transaction_id,A_covered,True,transaction_id copied from row 3206
+4417,14418,duplicate_transaction_id,A_covered,True,transaction_id copied from row 149
+1049,11050,duplicate_transaction_id,A_covered,True,transaction_id copied from row 2650
+867,10868,duplicate_transaction_id,A_covered,True,transaction_id copied from row 207
+3047,13048,duplicate_transaction_id,A_covered,True,transaction_id copied from row 4155
+862,10863,duplicate_transaction_id,A_covered,True,transaction_id copied from row 4117
+4707,14708,duplicate_transaction_id,A_covered,True,transaction_id copied from row 994
+4260,14261,duplicate_transaction_id,A_covered,True,transaction_id copied from row 4993
+1632,11633,duplicate_transaction_id,A_covered,True,transaction_id copied from row 3224
+4873,14874,duplicate_transaction_id,A_covered,True,transaction_id copied from row 4744
+3083,13084,duplicate_transaction_id,A_covered,True,transaction_id copied from row 576
+4955,14956,duplicate_transaction_id,A_covered,True,transaction_id copied from row 3876
+4998,14999,duplicate_transaction_id,A_covered,True,transaction_id copied from row 4622
+1459,11460,duplicate_transaction_id,A_covered,True,transaction_id copied from row 3355
+3051,13052,duplicate_transaction_id,A_covered,True,transaction_id copied from row 3985
+2719,12720,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+428,10429,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+4853,14854,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+139,10140,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+480,10481,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+1222,11223,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+2066,12067,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+3352,13353,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+4208,14209,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+4603,14604,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+866,10867,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+4241,14242,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+736,10737,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+2195,12196,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+4250,14251,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+264,10265,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+800,10801,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+3075,13076,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+4137,14138,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+3937,13938,null_price,A_covered,True,Price set to empty string (will parse as NaN)
+1790,11791,zero_price,A_covered,True,Price set to exactly 0
+360,10361,zero_price,A_covered,True,Price set to exactly 0
+860,10861,zero_price,A_covered,True,Price set to exactly 0
+4420,14421,zero_price,A_covered,True,Price set to exactly 0
+2933,12934,zero_price,A_covered,True,Price set to exactly 0
+4314,14315,zero_price,A_covered,True,Price set to exactly 0
+4948,14949,zero_price,A_covered,True,Price set to exactly 0
+3002,13003,zero_price,A_covered,True,Price set to exactly 0
+4381,14382,zero_price,A_covered,True,Price set to exactly 0
+3696,13697,zero_price,A_covered,True,Price set to exactly 0
+4043,14044,zero_price,A_covered,True,Price set to exactly 0
+4772,14773,zero_price,A_covered,True,Price set to exactly 0
+3749,13750,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+2368,12369,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+4962,14963,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+1066,11067,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+2515,12516,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+4299,14300,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+861,10862,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+223,10224,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+4609,14610,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+2492,12493,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+2428,12429,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+4633,14634,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+49,10050,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+3254,13255,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+3584,13585,null_customer_email,A_covered,True,Email set to empty (baseline drift should fire)
+2882,12883,negative_price,B_uncovered,True,Price set to -50.88 (negative)
+864,10865,negative_price,B_uncovered,True,Price set to -50.4 (negative)
+810,10811,negative_price,B_uncovered,True,Price set to -17.11 (negative)
+3474,13475,negative_price,B_uncovered,True,Price set to -88.5 (negative)
+3861,13862,negative_price,B_uncovered,True,Price set to -43.52 (negative)
+23,10024,negative_price,B_uncovered,True,Price set to -70.98 (negative)
+2145,12146,negative_price,B_uncovered,True,Price set to -97.06 (negative)
+3547,13548,negative_price,B_uncovered,True,Price set to -84.16 (negative)
+1105,11106,negative_price,B_uncovered,True,Price set to -16.96 (negative)
+3825,13826,negative_price,B_uncovered,True,Price set to -29.86 (negative)
+2342,12343,future_date,B_uncovered,True,order_date set to 2028-09-01 (far future)
+4690,14691,future_date,B_uncovered,True,order_date set to 2028-07-01 (far future)
+351,10352,future_date,B_uncovered,True,order_date set to 2028-10-06 (far future)
+2465,12466,future_date,B_uncovered,True,order_date set to 2029-01-12 (far future)
+4790,14791,future_date,B_uncovered,True,order_date set to 2029-04-17 (far future)
+4716,14717,future_date,B_uncovered,True,order_date set to 2028-10-11 (far future)
+2344,12345,future_date,B_uncovered,True,order_date set to 2028-07-12 (far future)
+56,10057,future_date,B_uncovered,True,order_date set to 2029-04-15 (far future)
+366,10367,wrong_date_format,B_uncovered,True,order_date changed from 2026-06-04 to 04/06/2026
+489,10490,wrong_date_format,B_uncovered,False,order_date changed from 2026-01-02 to 02/01/2026
+2989,12990,wrong_date_format,B_uncovered,True,order_date changed from 2026-02-04 to 04/02/2026
+1373,11374,wrong_date_format,B_uncovered,True,order_date changed from 2026-03-09 to 09/03/2026
+3325,13326,wrong_date_format,B_uncovered,True,order_date changed from 2026-01-01 to 01/01/2026
+888,10889,wrong_date_format,B_uncovered,True,order_date changed from 2026-06-28 to 28/06/2026
+41,10042,wrong_date_format,B_uncovered,True,order_date changed from 2026-02-16 to 16/02/2026
+1575,11576,wrong_date_format,B_uncovered,False,order_date changed from 2026-04-28 to 28/04/2026
+303,10304,wrong_date_format,B_uncovered,True,order_date changed from 2026-01-05 to 05/01/2026
+3010,13011,wrong_date_format,B_uncovered,True,order_date changed from 2026-04-07 to 07/04/2026
+1074,11075,malformed_email,B_uncovered,True,Email corrupted (no_at): 'alice904inbox.io'
+3028,13029,malformed_email,B_uncovered,True,Email corrupted (double_at): 'eve949@@shop.net'
+2035,12036,malformed_email,B_uncovered,True,Email corrupted (no_at): 'zach503example.com'
+4327,14328,malformed_email,B_uncovered,True,Email corrupted (no_at): 'gabe807inbox.io'
+2294,12295,malformed_email,B_uncovered,True,Email corrupted (double_at): 'trent420@@test.org'
+2736,12737,malformed_email,B_uncovered,True,Email corrupted (no_domain): 'aria205@'
+3578,13579,malformed_email,B_uncovered,True,Email corrupted (spaces): '  quentin817@inbox.io  '
+3842,13843,malformed_email,B_uncovered,True,Email corrupted (no_domain): 'mallory454@'
+3935,13936,malformed_email,B_uncovered,True,Email corrupted (no_at): 'nora769shop.net'
+3618,13619,malformed_email,B_uncovered,True,Email corrupted (no_at): 'jude31test.org'
+4240,14241,malformed_email,B_uncovered,True,Email corrupted (spaces): '  pia526@mail.com  '
+3773,13774,malformed_email,B_uncovered,True,Email corrupted (no_domain): 'charlie240@'
+4452,13376,duplicate_order_id,B_uncovered,True,order_id copied from row 3375
+3875,12124,duplicate_order_id,B_uncovered,True,order_id copied from row 2123
+878,13499,duplicate_order_id,B_uncovered,True,order_id copied from row 3498
+4554,12904,duplicate_order_id,B_uncovered,True,order_id copied from row 2903
+1389,11390,extreme_outlier_price,B_uncovered,True,Price set to 418816.52 (extreme outlier)
+2573,12574,extreme_outlier_price,B_uncovered,True,Price set to 228200.88 (extreme outlier)
+2176,12177,extreme_outlier_price,B_uncovered,True,Price set to 460149.2 (extreme outlier)
+1758,11759,extreme_outlier_price,B_uncovered,True,Price set to 166381.1 (extreme outlier)
+1942,11943,extreme_outlier_price,B_uncovered,True,Price set to 482000.72 (extreme outlier)
+4607,14608,extreme_outlier_price,B_uncovered,True,Price set to 197716.47 (extreme outlier)
+30,10031,whitespace_transaction_id,B_uncovered,True,transaction_id set to whitespace-only string
+2592,12593,whitespace_transaction_id,B_uncovered,True,transaction_id set to whitespace-only string
+4533,14534,whitespace_transaction_id,B_uncovered,True,transaction_id set to whitespace-only string
+843,10844,whitespace_transaction_id,B_uncovered,True,transaction_id set to whitespace-only string
+1649,11650,whitespace_transaction_id,B_uncovered,True,transaction_id set to whitespace-only string
+4255,14256,very_low_price,C_legitimate,True,Price set to 1.14 (cheap but real)
+4432,14433,very_low_price,C_legitimate,True,Price set to 1.57 (cheap but real)
+3880,13881,very_low_price,C_legitimate,True,Price set to 1.75 (cheap but real)
+4097,14098,very_low_price,C_legitimate,True,Price set to 1.27 (cheap but real)
+3940,13941,very_low_price,C_legitimate,True,Price set to 1.04 (cheap but real)
+1999,12000,very_low_price,C_legitimate,True,Price set to 0.26 (cheap but real)
+3628,13629,very_low_price,C_legitimate,True,Price set to 1.22 (cheap but real)
+374,10375,very_low_price,C_legitimate,True,Price set to 0.45 (cheap but real)
+356,10357,very_low_price,C_legitimate,True,Price set to 1.95 (cheap but real)
+2943,12944,very_low_price,C_legitimate,True,Price set to 1.22 (cheap but real)
+253,10254,very_low_price,C_legitimate,True,Price set to 1.96 (cheap but real)
+4575,14576,very_low_price,C_legitimate,True,Price set to 0.55 (cheap but real)
+2999,13000,very_low_price,C_legitimate,True,Price set to 1.6 (cheap but real)
+3702,13703,very_low_price,C_legitimate,True,Price set to 0.33 (cheap but real)
+1135,11136,very_low_price,C_legitimate,True,Price set to 1.15 (cheap but real)
+2661,12662,high_value_order,C_legitimate,True,Price set to 3730.16 (expensive but legitimate)
+1460,11461,high_value_order,C_legitimate,True,Price set to 4418.39 (expensive but legitimate)
+3556,13557,high_value_order,C_legitimate,True,Price set to 4868.93 (expensive but legitimate)
+307,10308,high_value_order,C_legitimate,True,Price set to 3765.19 (expensive but legitimate)
+2266,12267,high_value_order,C_legitimate,True,Price set to 2630.32 (expensive but legitimate)
+1441,11442,high_value_order,C_legitimate,True,Price set to 2959.98 (expensive but legitimate)
+2242,12243,high_value_order,C_legitimate,True,Price set to 2953.62 (expensive but legitimate)
+1616,11617,high_value_order,C_legitimate,True,Price set to 3926.69 (expensive but legitimate)
+2724,12725,high_value_order,C_legitimate,True,Price set to 4255.52 (expensive but legitimate)
+1829,11830,high_value_order,C_legitimate,True,Price set to 4289.58 (expensive but legitimate)
+1759,11760,weekend_order,C_legitimate,True,"Order date set to 2026-01-24 (weekend, legitimate)"
+3674,13675,weekend_order,C_legitimate,True,"Order date set to 2026-04-04 (weekend, legitimate)"
+1517,11518,weekend_order,C_legitimate,True,"Order date set to 2026-03-07 (weekend, legitimate)"
+726,10727,weekend_order,C_legitimate,True,"Order date set to 2026-06-06 (weekend, legitimate)"
+3437,13438,weekend_order,C_legitimate,True,"Order date set to 2026-01-10 (weekend, legitimate)"
+4720,14721,weekend_order,C_legitimate,True,"Order date set to 2026-02-14 (weekend, legitimate)"
+164,10165,weekend_order,C_legitimate,True,"Order date set to 2026-02-14 (weekend, legitimate)"
+2651,12652,weekend_order,C_legitimate,True,"Order date set to 2026-04-25 (weekend, legitimate)"
+4927,14928,weekend_order,C_legitimate,True,"Order date set to 2026-07-18 (weekend, legitimate)"
+2764,12765,weekend_order,C_legitimate,True,"Order date set to 2026-02-14 (weekend, legitimate)"
+142,10143,weekend_order,C_legitimate,True,"Order date set to 2026-07-11 (weekend, legitimate)"
+60,10061,weekend_order,C_legitimate,True,"Order date set to 2026-03-21 (weekend, legitimate)"
+4793,14794,weekend_order,C_legitimate,True,"Order date set to 2026-05-02 (weekend, legitimate)"
+499,10500,weekend_order,C_legitimate,True,"Order date set to 2026-07-11 (weekend, legitimate)"
+339,10340,weekend_order,C_legitimate,True,"Order date set to 2026-07-25 (weekend, legitimate)"
+2962,12963,weekend_order,C_legitimate,True,"Order date set to 2026-03-07 (weekend, legitimate)"
+4003,14004,weekend_order,C_legitimate,True,"Order date set to 2026-04-18 (weekend, legitimate)"
+2954,12955,weekend_order,C_legitimate,True,"Order date set to 2026-03-28 (weekend, legitimate)"
+3072,13073,weekend_order,C_legitimate,True,"Order date set to 2026-01-03 (weekend, legitimate)"
+2004,12005,weekend_order,C_legitimate,True,"Order date set to 2026-01-17 (weekend, legitimate)"
+138,10139,plus_addressed_email,C_legitimate,True,"Email set to sybil370+orders@mail.com (plus-addressed, legitimate)"
+4950,14951,plus_addressed_email,C_legitimate,True,"Email set to mallory74+orders@inbox.io (plus-addressed, legitimate)"
+3901,13902,plus_addressed_email,C_legitimate,True,"Email set to kai658+personal@inbox.io (plus-addressed, legitimate)"
+2321,12322,plus_addressed_email,C_legitimate,True,"Email set to jude559+personal@test.org (plus-addressed, legitimate)"
+4694,14695,plus_addressed_email,C_legitimate,True,"Email set to trent136+promo@example.com (plus-addressed, legitimate)"
+1075,11076,plus_addressed_email,C_legitimate,True,"Email set to eli420+personal@test.org (plus-addressed, legitimate)"
+4050,14051,plus_addressed_email,C_legitimate,True,"Email set to judy808+promo@test.org (plus-addressed, legitimate)"
+2001,12002,plus_addressed_email,C_legitimate,True,"Email set to harper462+promo@example.com (plus-addressed, legitimate)"
+3308,13309,plus_addressed_email,C_legitimate,True,"Email set to ivan508+work@test.org (plus-addressed, legitimate)"
+13,10014,plus_addressed_email,C_legitimate,True,"Email set to kevin389+test@test.org (plus-addressed, legitimate)"
+4241,14242,malformed_email,B_uncovered,True,Email set to 'not-an-email' (second defect on this row)
+489,10490,impossible_date,B_uncovered,True,"order_date set to 31/02/2026 (impossible date, second defect on this row)"
+3825,13826,malformed_email,B_uncovered,True,Email set to 'not-an-email' (second defect on this row)
+3047,13048,impossible_date,B_uncovered,True,"order_date set to 31/02/2026 (impossible date, second defect on this row)"
+2176,12177,impossible_date,B_uncovered,True,"order_date set to 31/02/2026 (impossible date, second defect on this row)"
+2592,12593,impossible_date,B_uncovered,True,"order_date set to 31/02/2026 (impossible date, second defect on this row)"
+1575,11576,impossible_date,B_uncovered,True,"order_date set to 31/02/2026 (impossible date, second defect on this row)"
+3935,13936,impossible_date,B_uncovered,True,"order_date set to 31/02/2026 (impossible date, second defect on this row)"
