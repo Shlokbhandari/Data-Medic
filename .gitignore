@@ -25,3 +25,7 @@ context.md
 
 # Personal reference docs, not part of the project
 *.pages
+
+# Generated pipeline output
+data/processed_orders.csv
+data/flagged_orders.csv
