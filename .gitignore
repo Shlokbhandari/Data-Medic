@@ -29,3 +29,7 @@ context.md
 # Generated pipeline output
 data/processed_orders.csv
 data/flagged_orders.csv
+
+# Local-only project memory
+updates.md
+AGENTS.md
